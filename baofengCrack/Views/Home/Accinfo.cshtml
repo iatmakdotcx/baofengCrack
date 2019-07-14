@@ -1,0 +1,245 @@
+﻿@model AccInfoModel;
+@{
+    ViewData["Title"] = "Accinfo";
+}
+@section Scripts{
+    <script>
+        var bagdata = @Html.Raw(@Model.Bag.ToString(Newtonsoft.Json.Formatting.None));
+        var modifiedData = {};
+        $(function () {
+            var baghtml = "";
+            for (var i in bagdata) {
+                var rowdata = bagdata[i];
+                var itemid = rowdata.id < 2000000 ? rowdata.id + 2000000 : rowdata.id;
+                baghtml += "<tr data-id=" + i + "><td>" + rowdata.uid + "</td><td>" + (itemName[itemid] == undefined ? "" : itemName[itemid].name) + "</td><td>" + (rowdata.eds == undefined ? "" : (rowdata.eds.count||"")) + "</td></tr>";
+            }
+            $("#bagtable tbody").append(baghtml);
+
+            $("table.fix-header").each(function () {
+                var tablectl = $(this);
+                var headertable = tablectl.clone().removeAttr("id");
+                headertable.wrap('<div class="fixed_header_wrap"></div>');
+                tablectl.wrap('<div class="fixheadertablewarp"></div>');
+                var header_wrap = headertable.closest(".fixed_header_wrap").insertBefore(tablectl).hide();
+                tablectl.wrap('<div class="fixed_table_crollwarp"></div>');
+
+                tablectl.find("td").each(function (index, value) {
+                    var tempWidth = $(value).outerWidth();
+                    var tempHeight = $(value).outerHeight();
+                    headertable.find("td").eq(index).css({ 'width': tempWidth + "px", 'height': tempHeight + "px" });
+                });
+
+                tablectl.closest(".fixed_table_crollwarp").append("<div></div>").scroll(function () {
+                    var headHeight = tablectl.find("thead").innerHeight();
+                    header_wrap.css({
+                        'height': headHeight,
+                        'position': 'absolute',
+                        'width': $(this).find(">div").innerWidth() + "px",
+                        'overflow': 'hidden',
+                        'z-index': '10'
+                    }).show();
+                    if ($(this).scrollTop() == 0) {
+                        header_wrap.hide();
+                    }
+                    header_wrap.scrollLeft($(this).scrollLeft());
+                });
+                //$(document).scroll(function () {
+                //    if ($(tablectl).offset().top - $(document).scrollTop() < 0) {
+                //        var headHeight = tablectl.find("thead").innerHeight();
+                //        header_wrap.css({
+                //            'height': headHeight,
+                //            'position': 'fixed',
+                //            'width': tablectl.next("div").innerWidth() + "px",
+                //            'overflow': 'hidden',
+                //            'top': '0',
+                //            'z-index': '10'
+                //        });
+                //        header_wrap.scrollLeft($(this).scrollLeft()).show();
+                //    } else {
+                //        header_wrap.hide();
+                //    }
+                //});
+            });
+            var bagtableEditor = $("#bagtable .editor").hide();
+            $("#bagtable tbody tr:not(.editor)").click(function (i, o, p) {
+                if ($(this).next().is(".editor") && bagtableEditor.is(":visible")) {
+                    bagtableEditor.hide();
+                } else {
+                    bagtableEditor.insertAfter(this).show();
+                    var id = $(this).attr("data-id");
+                    bagtableEditor.attr("data-id",id).find("textarea").val(JSON.stringify(bagdata[id], null, "\t"));
+                }
+            });
+            bagtableEditor.find(".attr input:button").click(function () {
+                var id = bagtableEditor.attr("data-id");
+                var tarea = bagtableEditor.find("textarea");
+                try {
+                    var v = JSON.parse(tarea.val());
+                    if (JSON.stringify(v) == JSON.stringify(bagdata[id])) {
+                        delete modifiedData[id];
+                    } else {
+                        modifiedData[id] = v;
+                    }
+                    bagtableEditor.hide();
+                } catch {
+                    alert("内容有误");
+                }
+            });
+
+            $("#btn_save").click(function () {
+                $.ajax({
+                    url: "/accinfo/@Model.user.userid/@GlobalSettings.getServerName(Model.user.ServerName)/save",
+                    method: "POST",
+                    data: JSON.stringify(modifiedData),
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    success: function (data) {
+                        if (data.ok) {
+                            location.reload();
+                        }
+                    },
+                    error: function (err) {}
+                });
+            });
+            $("#btn_refresh").click(function () {
+                location.href = "/accinfo/@Model.user.userid/@GlobalSettings.getServerName(Model.user.ServerName)/refresh";
+            });
+        });
+    </script>
+}
+    <style>
+    .tab-pane {
+        overflow: auto;
+    }
+
+    .fixed_header_wrap {
+        box-shadow: 0px 3px 5px #888888;
+        background: #FFFFFF;
+        width: 100%
+    }
+
+    table.fix-header {
+        width: 100%;
+    }
+
+    .fixed_table_crollwarp {
+        width: 100%;
+        overflow: auto;
+        /*height: 600px;*/
+    }
+    .table-hover-cus tbody tr:not(.editor):hover {
+        background: #ddd;
+    }
+    
+    </style>
+<div>
+    <input type="button" name="name" id="btn_save" value="保存" /> <input type="button" name="name" id="btn_refresh" value="刷新存档" />
+</div>
+<div class="mt-3 mb-5">
+    <ul id="clothing-nav" class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link" href="#home" id="home-tab" role="tab" data-toggle="tab" aria-controls="home" aria-expanded="false">Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="#bag" role="tab" id="hats-tab" data-toggle="tab" aria-controls="hats" aria-expanded="false">背包</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#hats" role="tab" id="hats-tab" data-toggle="tab" aria-controls="hats" aria-expanded="false">Hats</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#hats" role="tab" id="hats-tab" data-toggle="tab" aria-controls="hats" aria-expanded="false">Hats</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#hats" role="tab" id="hats-tab" data-toggle="tab" aria-controls="hats" aria-expanded="false">Hats</a>
+        </li>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="javascript:void(0);" role="button" aria-haspopup="true" aria-expanded="false">
+                Footwear
+            </a>
+            <div class="dropdown-menu" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, 42px, 0px); top: 0px; left: 0px; will-change: transform;">
+                <a class="dropdown-item" href="#dropdown-shoes" role="tab" id="dropdown-shoes-tab" data-toggle="tab" aria-controls="dropdownShoes" aria-expanded="true">Shoes</a>
+                <a class="dropdown-item active" href="#dropdown-boots" role="tab" id="dropdown-boots-tab" data-toggle="tab" aria-controls="dropdownBoots" aria-expanded="true">Boots</a>
+            </div>
+        </li>
+    </ul>
+    <div id="clothing-nav-content" class="tab-content">
+        <div role="tabpanel" class="tab-pane mt-3 fade" id="home" aria-labelledby="home-tab" aria-expanded="false">
+            <div class="input-group">
+                <label class="col-sm-2 control-label">UserId</label>
+                <div class="col-sm-10">
+                    <p class="form-control-static">@Model.user.userid</p>
+                </div>
+            </div>
+            <div class="input-group">
+                <label class="col-sm-2 control-label">ServerName</label>
+                <div class="col-sm-10">
+                    <p class="form-control-static">@GlobalSettings.getServerName(Model.user.ServerName) - @Model.user.ServerName</p>
+                </div>
+            </div>
+            <div class="input-group">
+                <label class="col-sm-2 control-label">PlayerId</label>
+                <div class="col-sm-10">
+                    <p class="form-control-static">@Model.user.player_id</p>
+                </div>
+            </div>
+            <div class="input-group">
+                <label class="col-sm-2 control-label">PlayerName</label>
+                <div class="col-sm-10">
+                    <p class="form-control-static">@Model.user.userName</p>
+                </div>
+            </div>
+        </div>
+        <div role="tabpanel" class="tab-pane fade show active" id="bag" aria-labelledby="home-tab" aria-expanded="false">
+            <table id="bagtable" border="0" cellpadding="4" cellspacing="0" class="table table-hover-cus fix-header">
+                <thead>
+                    <tr><td style="width:33%">id</td><td style="width:33%">名称</td><td>数量</td></tr>
+                </thead>
+                <tbody>
+                    <tr class="editor alert-info">
+                        <td colspan="3">
+                            <div class="input-group">
+                                <div class="attr col-sm-7">
+                                    <textarea class="col-12" style="height:200px"></textarea>
+                                    <input type="button" class="layui-btn" value="确定" />
+                                </div>
+                                <div class="col-sm-5 meta">
+                                    <dl>
+                                        <dt>123</dt>
+                                        <dd>333333333</dd>
+                                    </dl>
+                                    <dl>
+                                        <dt>附加属性:</dt>
+                                        <dd class="layui-select"></dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div role="tabpanel" class="tab-pane fade" id="hats" aria-labelledby="hats-tab" aria-expanded="false">
+            <p>
+                A hat is a head covering. It can be worn for protection against the elements, ceremonial reasons, religious reasons,
+                safety, or as a fashion accessory.
+            </p>
+        </div>
+
+        <div role="tabpanel" class="tab-pane fade" id="dropdown-shoes" aria-labelledby="dropdown-shoes-tab" aria-expanded="false">
+            <p>
+                A shoe is an item of footwear intended to protect and comfort the human foot while doing various activities. Shoes
+                are also used as an item of decoration.
+            </p>
+        </div>
+
+        <div role="tabpanel" class="tab-pane fade" id="dropdown-boots" aria-labelledby="dropdown-boots-tab" aria-expanded="true">
+            <p>
+                A boot is a type of footwear and a specific type of shoe. Most boots mainly cover the foot and the ankle, while
+                some also cover some part of the lower calf. Some boots extend up the leg, sometimes as far as the knee or even
+                the hip.
+            </p>
+        </div>
+
+    </div>
+</div>
+<script src="~/assets/itemName.js"></script>
