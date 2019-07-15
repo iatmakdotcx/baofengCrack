@@ -174,7 +174,7 @@ namespace baofengCrack.Controllers
             StringBuilder localSaveData = new StringBuilder();
             localSaveData.Append("is_cheat=&result=1&server_time_stamp=");
             localSaveData.Append(((DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000).ToString());
-            bool force_download = bodyData.GetQueryStringValue("force_download").AsBool();
+            bool force_download = bodyData.GetQueryStringValue("force_download").Asbool();
             if (user.isHold || force_download)
             {
                 user.isHold = false;

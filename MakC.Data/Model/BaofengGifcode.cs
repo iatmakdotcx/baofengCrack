@@ -9,7 +9,7 @@ namespace MakC.Data.Model
     /// <summary>
     /// 
     /// </summary> 
-    [SugarTable("userdata_bak")]
+    [SugarTable("gifcode")]
     public class BaofengGifcode
     {
         /// <summary>

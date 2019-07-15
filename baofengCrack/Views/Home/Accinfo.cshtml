@@ -188,6 +188,18 @@
                     <p class="form-control-static">@Model.user.userName</p>
                 </div>
             </div>
+            <div class="input-group">
+                <label class="col-sm-2 control-label">isBan</label>
+                <div class="col-sm-10">
+                    <p class="form-control-static">@(Model.user.is_cheat?"√":"")</p>
+                </div>
+            </div>
+            <div class="input-group">
+                <label class="col-sm-2 control-label">hold</label>
+                <div class="col-sm-10">
+                    <p class="form-control-static">@(Model.user.isHold ? "√" : "")</p>
+                </div>
+            </div>
         </div>
         <div role="tabpanel" class="tab-pane fade show active" id="bag" aria-labelledby="home-tab" aria-expanded="false">
             <table id="bagtable" border="0" cellpadding="4" cellspacing="0" class="table table-hover-cus fix-header">

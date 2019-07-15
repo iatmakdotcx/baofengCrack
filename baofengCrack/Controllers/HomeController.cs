@@ -51,7 +51,8 @@ namespace baofengCrack.Controllers
                 {
                     return View(new AccInfoModel()
                     {
-                        ErrMsg = errmsg
+                        ErrMsg = errmsg,
+                        user = user
                     });
                 }
             }
