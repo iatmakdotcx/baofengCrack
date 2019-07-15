@@ -187,7 +187,7 @@ namespace baofengCrack
         }
         public static string Req_Create_Login(BaofengUser user)
         {
-            string url = GlobalSettings.getServerHost(user.ServerName) + "/login"; 
+            string url = user.ServerName + "/login"; 
 
             Dictionary<string, string> data = new Dictionary<string, string>();
             data["user_token"] = "";

@@ -101,6 +101,21 @@
                     error: function (err) {}
                 });
             });
+            $("#btn_checkLogin").click(function () {
+                $.ajax({
+                    url: "/accinfo/@Model.user.userid/@GlobalSettings.getServerName(Model.user.ServerName)/checklogin",
+                    method: "POST",
+                    data: {},
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    success: function (data) {
+                        if (data.ok) {
+                            location.reload();
+                        }
+                    },
+                    error: function (err) {}
+                });
+            });
             $("#btn_refresh").click(function () {
                 location.href = "/accinfo/@Model.user.userid/@GlobalSettings.getServerName(Model.user.ServerName)/refresh";
             });
@@ -133,7 +148,9 @@
     
     </style>
 <div>
-    <input type="button" name="name" id="btn_save" value="保存" /> <input type="button" name="name" id="btn_refresh" value="刷新存档" />
+    <input type="button" name="name" id="btn_save" value="保存" />
+    <input type="button" name="name" id="btn_refresh" value="刷新存档" />
+    <input type="button" name="name" id="btn_checkLogin" value="CheckLogin" />
 </div>
 <div class="mt-3 mb-5">
     <ul id="clothing-nav" class="nav nav-tabs" role="tablist">

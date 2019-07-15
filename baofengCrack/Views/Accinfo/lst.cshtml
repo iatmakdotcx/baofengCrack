@@ -1,0 +1,16 @@
+﻿@model UserListModel;
+@{
+    ViewData["Title"] = "全部用户";
+}
+
+<table id="bagtable" border="0" cellpadding="4" cellspacing="0" class="table table-hover">
+    <thead>
+        <tr><td>userId</td><td>is_cheat</td><td>playerId</td><td>ServerName</td><td>Mark</td></tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.users)
+        {
+            <tr onclick="location.href='/accinfo/@item.userid/@GlobalSettings.getServerName(item.ServerName)'"><td>@item.userid</td><td>@(item.is_cheat?"√":"")</td><td>@item.player_id</td><td>@GlobalSettings.getServerName(item.ServerName)</td><td>@item.mark</td></tr>
+        }
+    </tbody>
+</table>

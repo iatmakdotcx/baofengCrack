@@ -54,5 +54,9 @@ namespace MakC.Data.Model
         /// 是否使用本地存档
         /// </summary>
         public bool isHold { get; set; }
+        /// <summary>
+        /// 账号备注
+        /// </summary>
+        public string mark { get; set; }
     }
 }

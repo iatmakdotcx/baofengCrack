@@ -13,9 +13,9 @@ using MakC.Common;
 
 namespace baofengCrack.Controllers
 {
-    public class HomeController : Controller
+    public class AccinfoController : Controller
     {
-        public HomeController()
+        public AccinfoController()
         {
         }
         public IActionResult Index()
@@ -101,6 +101,41 @@ namespace baofengCrack.Controllers
             dbc.Db.Updateable(bfd).ExecuteCommand();
             resObj["ok"] = true;
             return resObj;
+        }
+        [HttpPost("/accinfo/{userid}/{servername}/checklogin")]
+        public JObject checklogin([FromBody]JObject data, string userid, string servername)
+        {
+            JObject resObj = new JObject();
+            resObj["ok"] = false;
+            resObj["msg"] = "";
+            string svrHost = GlobalSettings.getServerHost(servername);
+
+            var dbc = DbContext.Get();
+            BaofengUser user = dbc.GetEntityDB<BaofengUser>().GetSingle(i => i.userid == userid && i.ServerName == svrHost);
+            if (user == null)
+            {
+                resObj["msg"] = "未找到用户";
+                return resObj;
+            }
+            comFunc.Req_Create_Login(user);
+
+            resObj["ok"] = true;
+            return resObj;
+        }
+
+        [Route("/lst")]
+        public IActionResult lst()
+        {
+            var dbc = DbContext.Get();
+            List<BaofengUser> user = dbc.GetEntityDB<BaofengUser>().GetList();
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return View(new UserListModel()
+            {
+                users = user
+            });
         }
     }
 }
