@@ -101,7 +101,7 @@ namespace baofengCrack.Controllers
                     gameAction_giftmanager_confirm_gift_code(urlHost, ReqJo, Rep);
                     break;
                 case "player_check_use_item":
-                case "player_upload_use_item_Info":
+                case "player_upload_use_item_info":
                     gameAction_player_check_use_item(urlHost, ReqJo, Rep);
                     break;
                 default:
@@ -221,11 +221,11 @@ namespace baofengCrack.Controllers
             BaofengUserdata bfd;
             comFunc.ResaveUserData(HttpUtility.UrlDecode(datazipStr), user, out bfd);
 
-            StringBuilder sbreoStr = new StringBuilder();
-            sbreoStr.Append("is_cheat=&result=1&server_time_stamp=");
-            sbreoStr.Append(((DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000).ToString());
-            Rep["ok"] = true;
-            Rep["data"] = sbreoStr.ToString();
+            //StringBuilder sbreoStr = new StringBuilder();
+            //sbreoStr.Append("is_cheat=&result=1&server_time_stamp=");
+            //sbreoStr.Append(((DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000).ToString());
+            //Rep["ok"] = true;
+            //Rep["data"] = sbreoStr.ToString();
         }
         private void gameAction_player_update_info(string urlHost, JObject ReqJo, JObject Rep)
         {
@@ -255,10 +255,14 @@ namespace baofengCrack.Controllers
                 return;
             }
             Gifcode.usedCount++;
-            if (Gifcode.usedCount > Gifcode.canUseCount)
+            if (Gifcode.canUseCount > 0)
             {
-                Rep["skip"] = "1";
-                return;
+                Gifcode.player_id = player_id;
+                if (Gifcode.usedCount > Gifcode.canUseCount)
+                {
+                    Rep["skip"] = "1";
+                    return;
+                }
             }
             dbc.Db.Updateable(Gifcode).ExecuteCommand();
             Rep["ok"] = true;
@@ -267,10 +271,12 @@ namespace baofengCrack.Controllers
         private void gameAction_player_check_use_item(string urlHost, JObject ReqJo, JObject Rep)
         {
             string bodyData = ReqJo["data"].ToString();
-            string user_id = bodyData.GetQueryStringValue("user_id");
+            string data = HttpUtility.UrlDecode(bodyData.GetQueryStringValue("data"));
+            JObject obj = (JObject)Newtonsoft.Json.JsonConvert.DeserializeObject(comFunc.DecodeParams(data));
+            int playerId = obj["pid"].ToString().AsInt();
             var dbc = DbContext.Get();
-            BaofengUser user = dbc.GetEntityDB<BaofengUser>().GetSingle(i => i.userid == user_id && i.userName == urlHost);
-            if (user == null || !user.isHold)
+            BaofengUser user = dbc.GetEntityDB<BaofengUser>().GetSingle(i => i.player_id == playerId && i.ServerName == urlHost);
+            if (user == null)
             {
                 Rep["skip"] = "1";
                 return;

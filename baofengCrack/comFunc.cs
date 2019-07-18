@@ -214,6 +214,13 @@ namespace baofengCrack
         public static string Req_Create_download_save(BaofengUser user,out BaofengUserdata bfd)
         {
             bfd = null;
+            string errMsg = "";
+            errMsg = Req_Create_Login(user);
+            if (!string.IsNullOrEmpty(errMsg))
+            {
+                return errMsg;
+            }
+
             string url = user.ServerName + "/download_save";
 
             Dictionary<string, string> data = new Dictionary<string, string>();
@@ -221,7 +228,6 @@ namespace baofengCrack
             data["login_token"] = user.logintoken;
             data["user_id"] = user.userid;
             data["force_download"] = "1";
-            string errMsg = "";
             string repdata = PostData(url, data, out errMsg);
             if (!string.IsNullOrEmpty(repdata))
             {

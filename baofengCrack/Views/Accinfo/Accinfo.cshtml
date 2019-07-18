@@ -1,6 +1,7 @@
 ﻿@model AccInfoModel;
 @{
     ViewData["Title"] = "Accinfo";
+    var UserServerName = GlobalSettings.getServerName(Model.user.ServerName);
 }
 @section Scripts{
     <script>
@@ -88,7 +89,7 @@
 
             $("#btn_save").click(function () {
                 $.ajax({
-                    url: "/accinfo/@Model.user.userid/@GlobalSettings.getServerName(Model.user.ServerName)/save",
+                    url: "/accinfo/@Model.user.userid/@UserServerName/save",
                     method: "POST",
                     data: JSON.stringify(modifiedData),
                     dataType: "json",
@@ -103,7 +104,7 @@
             });
             $("#btn_checkLogin").click(function () {
                 $.ajax({
-                    url: "/accinfo/@Model.user.userid/@GlobalSettings.getServerName(Model.user.ServerName)/checklogin",
+                    url: "/accinfo/@Model.user.userid/@UserServerName/checklogin",
                     method: "POST",
                     data: {},
                     dataType: "json",
@@ -117,7 +118,7 @@
                 });
             });
             $("#btn_refresh").click(function () {
-                location.href = "/accinfo/@Model.user.userid/@GlobalSettings.getServerName(Model.user.ServerName)/refresh";
+                location.href = "/accinfo/@Model.user.userid/@UserServerName/refresh";
             });
         });
     </script>
@@ -190,7 +191,7 @@
             <div class="input-group">
                 <label class="col-sm-2 control-label">ServerName</label>
                 <div class="col-sm-10">
-                    <p class="form-control-static">@GlobalSettings.getServerName(Model.user.ServerName) - @Model.user.ServerName</p>
+                    <p class="form-control-static">@UserServerName - @Model.user.ServerName</p>
                 </div>
             </div>
             <div class="input-group">
@@ -208,7 +209,7 @@
             <div class="input-group">
                 <label class="col-sm-2 control-label">isBan</label>
                 <div class="col-sm-10">
-                    <p class="form-control-static">@(Model.user.is_cheat?"√":"")</p>
+                    <p class="form-control-static">@(Model.user.is_cheat ? "√" : "")</p>
                 </div>
             </div>
             <div class="input-group">
@@ -271,4 +272,11 @@
 
     </div>
 </div>
-<script src="~/assets/itemName.js"></script>
+@if (UserServerName.StartsWith("sg"))
+{
+<script src="~/assets/sg.js"></script>
+}
+else
+{
+<script src="~/assets/bf.js"></script>
+}

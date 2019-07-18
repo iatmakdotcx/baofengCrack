@@ -55,6 +55,7 @@ namespace nnproxy
                             oS.utilCreateResponseAndBypassServer();
                             oS.oResponse.headers.SetStatus(200, "OK");
                             oS.utilSetResponseBody(rep["data"].ToString());
+                            oS.oResponse.headers.Add("hook", "1");
                             //oS.oResponse.headers.Remove("Content-Length");
                         }
                     }
