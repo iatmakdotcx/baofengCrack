@@ -1,0 +1,31 @@
+﻿@page
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>login</title>
+</head>
+<body>
+    <div class="login-wall">
+        <div class="login-right">
+            <form action="/login" id="forms" method="post" class="layui-form">
+                <h1>用户登录</h1>
+                <div class="cell"><span class="icon-user"></span><input type="text" name="loginname" id="loginname" lay-verify="required" lay-verType="tips" placeholder="登录账号" autocomplete="off"></div>
+                <div class="cell"><span class="icon-pwd"></span><input type="password" name="password" id="password" lay-verify="required" lay-verType="tips" placeholder="登录密码" autocomplete="off"></div>
+                <div class="login-tip"><span></span></div>
+                <div class="login-btn">
+                    <button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="loginsub">登录</button>
+                    <button type="button" class="layui-btn layui-btn-danger">重置</button>
+                </div>                
+            </form>
+        </div>
+        <div class="layui-clear"></div>
+    </div>
+</body>
+</html>

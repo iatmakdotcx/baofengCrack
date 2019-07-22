@@ -153,7 +153,7 @@ namespace nnproxy
             Console.WriteLine("==============================================================");
 
             Fiddler.CONFIG.IgnoreServerCertErrors = true;
-            FiddlerCoreStartupFlags oFCSF = /*FiddlerCoreStartupFlags.DecryptSSL | */FiddlerCoreStartupFlags.MonitorAllConnections | FiddlerCoreStartupFlags.OptimizeThreadPool | FiddlerCoreStartupFlags.AllowRemoteClients;
+            FiddlerCoreStartupFlags oFCSF = FiddlerCoreStartupFlags.DecryptSSL | FiddlerCoreStartupFlags.MonitorAllConnections | FiddlerCoreStartupFlags.OptimizeThreadPool | FiddlerCoreStartupFlags.AllowRemoteClients;
             Fiddler.FiddlerApplication.Startup(defaultPort, oFCSF);
             Console.WriteLine(Fiddler.FiddlerApplication.GetDetailedInfo());
         }

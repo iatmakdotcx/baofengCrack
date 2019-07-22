@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using log4net;
 using log4net.Config;
 using log4net.Repository;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -41,8 +42,19 @@ namespace baofengCrack
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, o =>
+            {
+                o.LoginPath = new PathString("/login");
+            });
+            services.AddAuthentication(CustAuthorizeAttribute.MakAuthenticationScheme).
+            AddCookie(CustAuthorizeAttribute.MakAuthenticationScheme, o=>{
+                o.LoginPath = new PathString("/login");
+            });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            services.AddResponseCompression();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -59,6 +71,8 @@ namespace baofengCrack
             app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
             app.UseStaticFiles();
+            app.UseAuthentication();
+            app.UseResponseCompression();
             app.UseCookiePolicy();
 
             app.UseMvc(routes =>

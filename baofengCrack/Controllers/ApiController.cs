@@ -42,14 +42,13 @@ namespace baofengCrack.Controllers
             Rep["msg"] = "";
             try
             {
-                switch (ReqJo["a"].ToString())
+                if (ReqJo["a"].ToString()=="v")
                 {
-                    case "v":
-                        checkVersion(ReqJo, Rep);
-                        break;
-                    default:
-                        gameAction(ReqJo, Rep);
-                        break;
+                    checkVersion(ReqJo, Rep);
+                }
+                else
+                {
+                    gameAction(ReqJo, Rep);
                 }
             }
             finally
@@ -77,35 +76,42 @@ namespace baofengCrack.Controllers
                 Rep["skip"] = "1";
                 return;
             }
-            //string serverName = GlobalSettings.getServerName(urlHost);
-            //if (string.IsNullOrEmpty(serverName))
-            //{
-            //    Rep["skip"] = "1";
-            //    return;
-            //}
-            switch (action.ToLower())
+            string serverName = GlobalSettings.getServerName(urlHost);
+            if (serverName.StartsWith("黑暗传说单机RPG"))
             {
-                case "login":
-                    gameAction_login(urlHost, ReqJo, Rep);
-                    break;
-                case "download_save":
-                    gameAction_download_save(urlHost, ReqJo, Rep);
-                    break;
-                case "upload_save":
-                    gameAction_upload_save(urlHost, ReqJo, Rep);
-                    break;
-                case "player_update_info":
-                    gameAction_player_update_info(urlHost, ReqJo, Rep);
-                    break;
-                case "giftmanager_confirm_gift_code":
-                    gameAction_giftmanager_confirm_gift_code(urlHost, ReqJo, Rep);
-                    break;
-                case "player_check_use_item":
-                case "player_upload_use_item_info":
-                    gameAction_player_check_use_item(urlHost, ReqJo, Rep);
-                    break;
-                default:
-                    break;
+                黑暗传说单机RPG.dooooo(action, ReqJo, Rep);
+            }
+            else
+            {
+                //if (string.IsNullOrEmpty(serverName))
+                //{
+                //    Rep["skip"] = "1";
+                //    return;
+                //}
+                switch (action.ToLower())
+                {
+                    case "login":
+                        gameAction_login(urlHost, ReqJo, Rep);
+                        break;
+                    case "download_save":
+                        gameAction_download_save(urlHost, ReqJo, Rep);
+                        break;
+                    case "upload_save":
+                        gameAction_upload_save(urlHost, ReqJo, Rep);
+                        break;
+                    case "player_update_info":
+                        gameAction_player_update_info(urlHost, ReqJo, Rep);
+                        break;
+                    case "giftmanager_confirm_gift_code":
+                        gameAction_giftmanager_confirm_gift_code(urlHost, ReqJo, Rep);
+                        break;
+                    case "player_check_use_item":
+                    case "player_upload_use_item_info":
+                        gameAction_player_check_use_item(urlHost, ReqJo, Rep);
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
@@ -288,13 +294,14 @@ namespace baofengCrack.Controllers
         private string priseUrl(string url,out string action)
         {
             action = "";
-            int splIdx = url.LastIndexOf("/");
+            string host = "";
+            int splIdx = url.IndexOf("/", 8); //https://
             if (splIdx > 0)
             {
+                host = url.Substring(0, splIdx + 1);
                 action = url.Substring(splIdx + 1);
-                return url.Substring(0, splIdx);
             }
-            return "";
+            return host;
         }
     }
 }
