@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using log4net;
 using MakC.Common;
 using MakC.Data;
 using MakC.Data.Model;
@@ -19,7 +20,7 @@ namespace baofengCrack.Controllers
     public class ApiController : ControllerBase
     {
         private const int APIVERSION = 1;
-
+        private ILog log = LogManager.GetLogger(Startup.Repository.Name, typeof(ApiController));
         [HttpGet]
         public string Get()
         {
@@ -42,13 +43,23 @@ namespace baofengCrack.Controllers
             Rep["msg"] = "";
             try
             {
-                if (ReqJo["a"].ToString()=="v")
+                if (ReqJo["a"].ToString() == "v")
                 {
                     checkVersion(ReqJo, Rep);
                 }
                 else
                 {
                     gameAction(ReqJo, Rep);
+                }
+            }
+            catch(Exception exex) {
+                log.Error(exex.Message);
+                log.Error(exex.StackTrace);
+                if (ReqJo["header"]?["debug"]?.ToString() == "1")
+                {
+                    Rep["err"] = new JObject();
+                    Rep["err"]["msg"] = exex.Message;
+                    Rep["err"]["trace"] = exex.StackTrace;
                 }
             }
             finally
@@ -81,6 +92,10 @@ namespace baofengCrack.Controllers
             {
                 黑暗传说单机RPG.dooooo(action, ReqJo, Rep);
             }
+            else if (serverName.StartsWith("三国演义吞噬无界"))
+            {
+                三国演义吞噬无界.dooooo(action, ReqJo, Rep);
+            }
             else
             {
                 //if (string.IsNullOrEmpty(serverName))
@@ -90,23 +105,23 @@ namespace baofengCrack.Controllers
                 //}
                 switch (action.ToLower())
                 {
-                    case "login":
+                    case "/login":
                         gameAction_login(urlHost, ReqJo, Rep);
                         break;
-                    case "download_save":
+                    case "/download_save":
                         gameAction_download_save(urlHost, ReqJo, Rep);
                         break;
-                    case "upload_save":
+                    case "/upload_save":
                         gameAction_upload_save(urlHost, ReqJo, Rep);
                         break;
-                    case "player_update_info":
+                    case "/player_update_info":
                         gameAction_player_update_info(urlHost, ReqJo, Rep);
                         break;
-                    case "giftmanager_confirm_gift_code":
+                    case "/giftmanager_confirm_gift_code":
                         gameAction_giftmanager_confirm_gift_code(urlHost, ReqJo, Rep);
                         break;
-                    case "player_check_use_item":
-                    case "player_upload_use_item_info":
+                    case "/player_check_use_item":
+                    case "/player_upload_use_item_info":
                         gameAction_player_check_use_item(urlHost, ReqJo, Rep);
                         break;
                     default:

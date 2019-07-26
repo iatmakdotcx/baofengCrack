@@ -15,7 +15,8 @@ namespace nnproxy
     public static class ProxyMgr
     {
         public static ushort defaultPort = 8878;
-        public static string SvrApiUrl = "http://localhost:11105/api";
+        //public static string SvrApiUrl = "http://localhost:11105/api";
+        public static string SvrApiUrl = "http://106.12.46.65:8080/api";
         public static List<Fiddler.Session> oAllSessions;
         public static bool showInfo = true;
         public static List<string> whitelist = new List<string>();
@@ -43,17 +44,24 @@ namespace nnproxy
                 Monitor.Exit(oAllSessions);
 
                 if (GameSvrHosts.Exists(ii => oS.fullUrl.StartsWith(ii)))
-                {
+                {                    
                     string postData = Encoding.UTF8.GetString(oS.RequestBody);
-
                     JObject rep;
-                    string errmsg = gsvr(out rep, oS.fullUrl, postData);
+                    string errmsg = gsvr(out rep, oS.fullUrl, postData, oS.RequestHeaders);
                     if (string.IsNullOrEmpty(errmsg))
                     {
                         if ((bool)rep["ok"])
                         {
                             oS.utilCreateResponseAndBypassServer();
                             oS.oResponse.headers.SetStatus(200, "OK");
+                            if (rep["header"] != null)
+                            {
+                                JArray headArr = (JArray)rep["header"];
+                                foreach (var item in headArr)
+                                {
+                                    oS.oResponse.headers.Add(item["k"].ToString(), item["v"].ToString());
+                                }
+                            }
                             oS.utilSetResponseBody(rep["data"].ToString());
                             oS.oResponse.headers.Add("hook", "1");
                             //oS.oResponse.headers.Remove("Content-Length");
@@ -215,13 +223,19 @@ namespace nnproxy
             return "";
         }
 
-        private static string gsvr(out JObject obj, string url,string bodyData)
+        private static string gsvr(out JObject obj, string url, string bodyData, HTTPRequestHeaders RequestHeaders)
         {
             obj = null;
             JObject reqData = new JObject();
             reqData["a"] = "a";
             reqData["url"] = url;
             reqData["data"] = bodyData;
+            reqData["header"] = new JObject();
+            foreach (var item in RequestHeaders)
+            {
+                //((JArray)reqData["header"]).Add(new JObject(new JProperty("k", item.Name), new JProperty("v", item.Value)));
+                reqData["header"][item.Name] = item.Value;
+            }            
             string errmsg = "";
             string respData = PostData(SvrApiUrl, reqData.ToString(Formatting.None), out errmsg);
             if (!string.IsNullOrEmpty(errmsg))

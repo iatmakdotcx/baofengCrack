@@ -19,7 +19,7 @@ namespace baofengCrack
         {
             if (action.EndsWith("account/account_upload.php"))
             {
-                byte[] bodyData = System.Text.Encoding.ASCII.GetBytes(ReqJo["data"].ToString());
+                byte[] bodyData = System.Text.Encoding.UTF8.GetBytes(ReqJo["data"].ToString());
                 JObject jo = JsonStringToJsonObj(DecrptyPostData(bodyData));
                 JObject data1 = (JObject)JsonConvert.DeserializeObject(jo["data1"].ToString());
                 var dbh = DbContext.Get();
@@ -56,9 +56,16 @@ namespace baofengCrack
                 Rep["data"] = PackResponseData(data.ToString(Formatting.None), account.ime, account.playerid );
             }
             else if (action.EndsWith("account/account_login2.php"))
-            {
+            {                
                 byte[] bodyData = System.Text.Encoding.ASCII.GetBytes(ReqJo["data"].ToString());
-                JObject jo = JsonStringToJsonObj(DecrptyPostData(bodyData));
+                var decodedStr = DecrptyPostData(bodyData);
+                JObject jo = JsonStringToJsonObj(decodedStr);
+                if (jo == null)
+                {
+                    Rep["msg"] = "数据解密失败！";
+                    Rep["data"] = decodedStr;
+                    return;
+                }                
                 JObject data1 = (JObject)JsonConvert.DeserializeObject(jo["data1"].ToString());
                 var dbh = DbContext.Get();
                 黑暗传说单机RPG_Model.账号 account = dbh.GetEntityDB<黑暗传说单机RPG_Model.账号>().GetSingle(ii => ii.username == data1["username"].ToString());
@@ -75,6 +82,10 @@ namespace baofengCrack
                 }
                 else
                 {
+                    if (account.password != data1["userpassword"].ToString())
+                    {
+                        return;
+                    }
                     account.ime = data1["basevalue"]["ime"].ToString();
                     account.playerid = data1["basevalue"]["playerid"].ToString();
                     dbh.Db.Updateable(account).ExecuteCommand();
@@ -104,6 +115,10 @@ namespace baofengCrack
                     Rep["data"] = PackResponseData(Errdata.ToString(Formatting.None), ime, playerid);
                     return;
                 }
+
+                JObject playersave = (JObject)JsonConvert.DeserializeObject(account.data);
+                playersave["baseValue"]["phoneId"] = ime;
+                account.data = playersave.ToString();
 
                 Rep["ok"] = true;
                 JObject data = new JObject();
@@ -145,16 +160,11 @@ namespace baofengCrack
                 var dbh = DbContext.Get();
                 string ime = data1["basevalue"]["ime"].ToString();
                 string playerid = data1["basevalue"]["playerid"].ToString();
-                //黑暗传说单机RPG_Model.账号 account = dbh.GetEntityDB<黑暗传说单机RPG_Model.账号>().GetSingle(ii => ii.username == data1["username"].ToString());
-                //if (account == null || account.password != data1["userpassword"].ToString() || string.IsNullOrEmpty(account.data))
-                //{
-                //    Rep["ok"] = true;
-                //    JObject Errdata = new JObject();
-                //    Errdata["currtime"] = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
-                //    Errdata["server_returncode"] = 135;  //135 下载失败
-                //    Rep["data"] = PackResponseData(Errdata.ToString(Formatting.None), ime, playerid);
-                //    return;
-                //}
+                黑暗传说单机RPG_Model.可兑换 account = dbh.GetEntityDB<黑暗传说单机RPG_Model.可兑换>().GetSingle(ii => ime.StartsWith(ii.gameId));
+                if (account == null)
+                {
+                    return;
+                }
 
                 Rep["ok"] = true;
                 JObject data = new JObject();
@@ -192,7 +202,7 @@ namespace baofengCrack
             return EncrptyPostResult(RepJsonStr);
         }
 
-        private static JObject JsonStringToJsonObj(string JsonStr)
+        public static JObject JsonStringToJsonObj(string JsonStr)
         {
             JObject jo = null;
             for (int i = 0; i < 3; i++)
@@ -202,7 +212,7 @@ namespace baofengCrack
                     jo = (JObject)JsonConvert.DeserializeObject(JsonStr);
                     break;
                 }
-                catch (Exception)
+                catch
                 {
                     JsonStr = JsonStr.Remove(JsonStr.Length - 1);
                 }

@@ -1,2 +1,6 @@
 http://idle.oss-cn-hangzhou.aliyuncs.com
 http://yclguaji.oss-cn-shanghai.aliyuncs.com
+https://api.vungle.com
+https://ulogs.umengcloud.com
+https://ulogs.umeng.com
+http://tool.ftaro.com

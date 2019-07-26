@@ -34,7 +34,15 @@ namespace MakC.Data.Model
 
             public DateTime uploadTime { get; set; }
         }
+        [SugarTable("黑暗传说单机RPG_可兑换")]
+        public class 可兑换
+        {
+            [SugarColumn(IsPrimaryKey = true, IsIdentity = true)]
+            public int id { get; set; }
+            public string gameId { get; set; }
+            public bool enabled { get; set; }
 
+        }
 
     }
 }
