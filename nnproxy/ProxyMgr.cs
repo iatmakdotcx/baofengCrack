@@ -15,8 +15,8 @@ namespace nnproxy
     public static class ProxyMgr
     {
         public static ushort defaultPort = 8878;
-        //public static string SvrApiUrl = "http://localhost:11105/api";
-        public static string SvrApiUrl = "http://106.12.46.65:8080/api";
+        public static string SvrApiUrl = "http://localhost:11105/api";
+        //public static string SvrApiUrl = "http://106.12.46.65:8080/api";
         public static List<Fiddler.Session> oAllSessions;
         public static bool showInfo = true;
         public static List<string> whitelist = new List<string>();

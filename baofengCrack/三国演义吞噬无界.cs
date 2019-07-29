@@ -147,7 +147,29 @@ return a;
                 string postdata = ReqJo["data"].ToString();
                 int keyid;
                 JObject data1 = DecodeRequestData(postdata,out keyid);
-            }else if (action.EndsWith("Service.asmx/UseCdkey"))
+            }else if (action.EndsWith("Service.asmx/GetUsrSession"))
+            {
+                string postdata = ReqJo["data"].ToString();
+                int keyid;
+                JObject data1 = DecodeRequestData(postdata, out keyid);              
+                string sid = data1["sid"].ToString();
+                var dbh = DbContext.Get();
+                三国演义吞噬无界_Model.账号 account = dbh.GetEntityDB<三国演义吞噬无界_Model.账号>().GetSingle(ii => ii.sid == sid);
+                if (account == null)
+                {
+                    Rep["msg"] = "无账户信息！";
+                    return;
+                }
+
+                JObject ResData = new JObject();
+                ResData.Add("result", 0);
+                ResData.Add("id", 0);
+                ResData.Add("ss", account.ss);
+                ResData.Add("echo", data1["echo"]);
+                Rep["data"] = EncodeResponseData(ResData.ToString(Formatting.None), "OOHVcwo3Yb2Kob3YC38mVxwJ0aKIaWuBBLj7W8YiZRFLxBr3QuQFA1VghXV1MF", keyid);
+                Rep["ok"] = true;
+            }
+            else if (action.EndsWith("Service.asmx/UseCdkey"))
             {
                 string postdata = ReqJo["data"].ToString();
                 int keyid;
@@ -161,6 +183,7 @@ return a;
                 三国演义吞噬无界_Model.兑换码 cdkey = dbh.GetEntityDB<三国演义吞噬无界_Model.兑换码>().GetSingle(ii => ii.cdkey == val && (ii.playerId == null || ii.playerId == sid));
                 if (cdkey == null)
                 {
+                    Rep["msg"] = "无效兑换码";
                     return;
                 }
                 cdkey.usedCount++;
@@ -169,18 +192,32 @@ return a;
                     cdkey.playerId = sid;
                     if (cdkey.usedCount > cdkey.canUseCount)
                     {
+                        Rep["msg"] = "兑换码兑换已到上限";
                         return;
                     }
                 }
                 三国演义吞噬无界_Model.账号 account = dbh.GetEntityDB<三国演义吞噬无界_Model.账号>().GetSingle(ii => ii.sid == sid);
                 if (account == null)
                 {
-                    return;
+                    account = new 三国演义吞噬无界_Model.账号();
+
+                    account.tmpid = data1["id"].ToString().AsInt();
+                    account.ss = data1["ss"].ToString().AsInt();
+                    account.sid = data1["sid"].ToString();
+                    account.deviceId = data1["device"].ToString();
+                    account.username = "";
+                    account.password = "";
+                    account.bufferData = cdkey.bufferData;
+                    account.bufferId = 0;
+                    dbh.Db.Insertable(account).ExecuteCommand();
+                }
+                else
+                {
+                    account.bufferData = cdkey.bufferData;
+                    account.bufferId = 0;
+                    dbh.Db.Updateable(account).ExecuteCommand();
                 }
                 dbh.Db.Updateable(cdkey).ExecuteCommand();
-                account.bufferData = cdkey.bufferData;
-                account.bufferId = 0;
-                dbh.Db.Updateable(account).ExecuteCommand();
 
                 JObject ResData = new JObject();
                 ResData.Add("result", 0);
@@ -212,15 +249,24 @@ return a;
                     account.bufferData = "";
                     dbh.Db.Insertable(account).ExecuteCommand();
                 }
-                if (string.IsNullOrEmpty(account.bufferData))
-                {
-                    return;
-                }
                 string errMsg;
                 string ResponseData = PostData(ReqJo["url"].ToString(), postdata, out errMsg);
                 if (string.IsNullOrEmpty(errMsg))
                 {
                     JObject data2 = DecodeResponseData(ResponseData, out keyid);
+                    if (data2["result"].ToString() != "0")
+                    {
+                        //已封号？
+                        data2["syn"] = 13;
+                        data2["pay"] = 0;
+                        data2["rmb"] = 0;
+                        data2["ste"] = 0;
+                        data2["tick"] = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
+                        data2["day"] = (DateTime.Now - new DateTime(1970,1,1)).TotalDays;
+                        data2["result"] = 0;
+                        data2["excludeMsg"] = "";
+                        data2["msg"] = new JArray() ;
+                    }
                     if (data2["buffer"] == null)
                     {
                         data2["buffer"] = new JObject();
