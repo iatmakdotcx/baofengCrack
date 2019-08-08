@@ -15,12 +15,14 @@ namespace MakC.Data.Model
             public int id { get; set; }            
             public int tmpid { get; set; }
             public int ss { get; set; }
-            public string sid { get; set; }
+            public string sid { get; set; } 
             public string deviceId { get; set; }
             public string username { get; set; }
             public string password { get; set; }
             public string bufferData { get; set; }
             public int bufferId { get; set; }
+            public string SaveData { get; set; }
+            public string uid { get; set; }
         }
 
         [SugarTable("三国演义吞噬无界_兑换码")]

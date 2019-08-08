@@ -47,10 +47,10 @@ namespace baofengCrack
             {
                 o.LoginPath = new PathString("/login");
             });
-            services.AddAuthentication(CustAuthorizeAttribute.MakAuthenticationScheme).
-            AddCookie(CustAuthorizeAttribute.MakAuthenticationScheme, o=>{
-                o.LoginPath = new PathString("/login");
-            });
+            //services.AddAuthentication(CustAuthorizeAttribute.MakAuthenticationScheme).
+            //AddCookie(CustAuthorizeAttribute.MakAuthenticationScheme, o=>{
+            //    o.LoginPath = new PathString("/login");
+            //});
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 

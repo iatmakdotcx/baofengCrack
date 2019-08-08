@@ -141,32 +141,102 @@ return a;
             jArray.Add(new JObject(new JProperty("k", "Access-Control-Allow-Methods"),new JProperty("v", "PUT,POST,GET,DELETE,OPTIONS")));
             jArray.Add(new JObject(new JProperty("k", "Access-Control-Allow-Headers"),new JProperty("v", "Access-Control-Allow-Origin,Origin,X-Requested-With,Content-Type,Accept")));
             Rep["header"] = jArray;
-
+            if (action.IndexOf("?") > 0)
+            {
+                action = action.Substring(0, action.IndexOf("?"));
+            }
             if (action.EndsWith("WS_Passport.asmx/Login"))
             {
                 string postdata = ReqJo["data"].ToString();
                 int keyid;
-                JObject data1 = DecodeRequestData(postdata,out keyid);
-            }else if (action.EndsWith("Service.asmx/GetUsrSession"))
+                JObject data1 = DecodeRequestData(postdata, out keyid);
+                //string account = data1["account"].ToString();
+                //string pwd = data1["pwd"].ToString();
+                //string sid = data1["sid"].ToString();
+                //JObject data2 = new JObject();
+                //data2["uid"] = 0;
+                //data2["code"] = data1["sid"];
+                //data2["addr"] = "http://,service.ftaro.com,80,/gameservice/Service.asmx/";
+                //data2["result"] = 0;
+                //data2["echo"] = data1["echo"];
+                //Rep["data"] = EncodeResponseData(data2.ToString(Formatting.None), "OOHVcwo3Yb2Kob3YC38mVxwJ0aKIaWuBBLj7W8YiZRFLxBr3QuQFA1VghXV1MF", keyid);
+                //Rep["ok"] = true;
+            }
+            else if (action.EndsWith("Service.asmx/GetUsrSession"))
             {
                 string postdata = ReqJo["data"].ToString();
                 int keyid;
-                JObject data1 = DecodeRequestData(postdata, out keyid);              
+                JObject data1 = DecodeRequestData(postdata, out keyid);
                 string sid = data1["sid"].ToString();
+                string uid = data1["uid"]?.ToString();
                 var dbh = DbContext.Get();
-                三国演义吞噬无界_Model.账号 account = dbh.GetEntityDB<三国演义吞噬无界_Model.账号>().GetSingle(ii => ii.sid == sid);
+                三国演义吞噬无界_Model.账号 account=null;
+                if (!string.IsNullOrEmpty(uid))
+                {
+                    account = dbh.GetEntityDB<三国演义吞噬无界_Model.账号>().AsQueryable().Where(ii => ii.uid == uid).First();
+                }
                 if (account == null)
                 {
-                    Rep["msg"] = "无账户信息！";
-                    return;
+                    account = dbh.GetEntityDB<三国演义吞噬无界_Model.账号>().GetSingle(ii => ii.sid == sid);
                 }
-
-                JObject ResData = new JObject();
-                ResData.Add("result", 0);
-                ResData.Add("id", 0);
-                ResData.Add("ss", account.ss);
-                ResData.Add("echo", data1["echo"]);
-                Rep["data"] = EncodeResponseData(ResData.ToString(Formatting.None), "OOHVcwo3Yb2Kob3YC38mVxwJ0aKIaWuBBLj7W8YiZRFLxBr3QuQFA1VghXV1MF", keyid);
+                else
+                {
+                    if(account.sid != sid)
+                    {
+                        account.sid = sid;
+                        dbh.Db.Updateable(account).UpdateColumns(ii => ii.sid).ExecuteCommand();
+                    }
+                }
+                if (account == null)
+                {
+                    account = new 三国演义吞噬无界_Model.账号();
+                    account.tmpid = 0;
+                    account.ss = data1["echo"].AsInt();
+                    account.sid = sid;
+                    account.deviceId = "";
+                    account.username = "";
+                    account.password = "";
+                    account.bufferData = "";
+                    account.uid = uid;
+                    dbh.Db.Insertable(account).ExecuteCommand();
+                }
+                string errMsg;
+                string ResponseData = PostData(ReqJo["url"].ToString(), postdata, out errMsg);
+                if (string.IsNullOrEmpty(errMsg))
+                {
+                    JObject data2 = DecodeResponseData(ResponseData, out keyid);
+                    if (data2["result"].ToString() != "0")
+                    {
+                        data2["result"] = 0;
+                        data2["id"] = 0;
+                        data2["ss"] = account.ss;
+                        data2["echo"] = data1["echo"];
+                    }
+                    Rep["data"] = EncodeResponseData(data2.ToString(Formatting.None), "OOHVcwo3Yb2Kob3YC38mVxwJ0aKIaWuBBLj7W8YiZRFLxBr3QuQFA1VghXV1MF", keyid);
+                    Rep["ok"] = true;
+                }
+                else
+                {
+                    JObject ResData = new JObject();
+                    ResData.Add("result", 0);
+                    ResData.Add("id", 0);
+                    ResData.Add("ss", account.ss);
+                    ResData.Add("echo", data1["echo"]);
+                    Rep["data"] = EncodeResponseData(ResData.ToString(Formatting.None), "OOHVcwo3Yb2Kob3YC38mVxwJ0aKIaWuBBLj7W8YiZRFLxBr3QuQFA1VghXV1MF", keyid);
+                    Rep["ok"] = true;
+                }
+            }
+            else if (action.EndsWith("Service.asmx/CheckUsrSession"))
+            {
+                string postdata = ReqJo["data"].ToString();
+                int keyid;
+                JObject data1 = DecodeRequestData(postdata, out keyid);
+                JObject data2 = new JObject();
+                data2["result"] = 0;
+                data2["tick"] = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
+                data2["day"] = (int)((DateTime.Now - new DateTime(1970, 1, 1)).TotalDays);
+                data2["echo"] = data1["echo"];
+                Rep["data"] = EncodeResponseData(data2.ToString(Formatting.None), "OOHVcwo3Yb2Kob3YC38mVxwJ0aKIaWuBBLj7W8YiZRFLxBr3QuQFA1VghXV1MF", keyid);
                 Rep["ok"] = true;
             }
             else if (action.EndsWith("Service.asmx/UseCdkey"))
@@ -227,69 +297,86 @@ return a;
 
                 Rep["data"] = EncodeResponseData(ResData.ToString(Formatting.None), "OOHVcwo3Yb2Kob3YC38mVxwJ0aKIaWuBBLj7W8YiZRFLxBr3QuQFA1VghXV1MF", keyid);
                 Rep["ok"] = true;
-            }else if (action.EndsWith("Service.asmx/TouchV2"))
+            }
+            else if (action.EndsWith("Service.asmx/TouchV2"))
             {
                 string postdata = ReqJo["data"].ToString();
                 int keyid;
                 JObject data1 = DecodeRequestData(postdata, out keyid);
                 string sid = data1["sid"].ToString();
+                int syn = data1["syn"]?.AsInt() ?? 0;
                 int buffer = data1["buffer"].ToString().AsInt();
                 var dbh = DbContext.Get();
-                三国演义吞噬无界_Model.账号 account = dbh.GetEntityDB<三国演义吞噬无界_Model.账号>().GetSingle(ii => ii.sid == sid);
+                三国演义吞噬无界_Model.账号 account = dbh.GetEntityDB<三国演义吞噬无界_Model.账号>().AsQueryable().Where(ii => ii.sid == sid).First();
                 if (account == null)
                 {
-                    account = new 三国演义吞噬无界_Model.账号();
-
-                    account.tmpid = data1["id"].ToString().AsInt();
-                    account.ss = data1["ss"].ToString().AsInt();
-                    account.sid = data1["sid"].ToString();                    
-                    account.deviceId = data1["device"].ToString();
-                    account.username = "";
-                    account.password = "";
-                    account.bufferData = "";
-                    dbh.Db.Insertable(account).ExecuteCommand();
+                    return;
                 }
                 string errMsg;
                 string ResponseData = PostData(ReqJo["url"].ToString(), postdata, out errMsg);
                 if (string.IsNullOrEmpty(errMsg))
                 {
                     JObject data2 = DecodeResponseData(ResponseData, out keyid);
-                    if (data2["result"].ToString() != "0")
+                    if (data2["result"] != null && data2["result"].ToString() != "0")
                     {
                         //已封号？
-                        data2["syn"] = 13;
-                        data2["pay"] = 0;
-                        data2["rmb"] = 0;
-                        data2["ste"] = 0;
-                        data2["tick"] = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
-                        data2["day"] = (DateTime.Now - new DateTime(1970,1,1)).TotalDays;
-                        data2["result"] = 0;
-                        data2["excludeMsg"] = "";
-                        data2["msg"] = new JArray() ;
-                    }
-                    if (data2["buffer"] == null)
-                    {
-                        data2["buffer"] = new JObject();
-                    }
-                    else
-                    {
-                        foreach (var item in (JObject)data2["buffer"])
+                        if (syn == 0 && !string.IsNullOrEmpty(account.SaveData))
                         {
-                            int tmpInt;
-                            if(int.TryParse(item.Key,out tmpInt) && tmpInt > buffer)
-                            {
-                                buffer = tmpInt;
-                            }
+                            //下载存档
+                            data2 = (JObject)JsonConvert.DeserializeObject(account.SaveData);
+                            data2["echo"] = data1["echo"];
+                        }
+                        else
+                        {
+                            data2["syn"] = syn == 0 ? 11 : syn;
+                            data2["pay"] = 0;
+                            data2["rmb"] = 0;
+                            data2["ste"] = 0;
+                            data2["tick"] = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
+                            data2["day"] = (int)((DateTime.Now - new DateTime(1970, 1, 1)).TotalDays);
+                            data2["result"] = 0;
+                            data2["excludeMsg"] = "";
+                            data2["msg"] = new JArray();
                         }
                     }
-                    buffer += 1;
-                    if (buffer < account.bufferId || account.bufferId == 0)
+                    if (!string.IsNullOrEmpty(account.bufferData))
                     {
-                        account.bufferId = buffer;
-                        dbh.Db.Updateable(account).ExecuteCommand();
-                        data2["buffer"][buffer.ToString()] = account.bufferData;   // "[1,3,292,2],[100,50,8,88888]"
+                        if (data2["buffer"] == null)
+                        {
+                            data2["buffer"] = new JObject();
+                            buffer += 1;
+                            if (buffer < account.bufferId || account.bufferId == 0)
+                            {
+                                account.bufferId = buffer;
+                                dbh.Db.Updateable(account).ExecuteCommand();
+                                data2["buffer"][buffer.ToString()] = account.bufferData;   // "[1,3,292,2],[100,50,8,88888]"
+                            }
+                            data2.Remove("info");
+                        }
+                        else if (data2["buffer"].Type != JTokenType.Object)
+                        {
+                            //buffer为一个数字？
+                        }
+                        else
+                        {
+                            foreach (var item in (JObject)data2["buffer"])
+                            {
+                                int tmpInt;
+                                if (int.TryParse(item.Key, out tmpInt) && tmpInt > buffer)
+                                {
+                                    buffer = tmpInt;
+                                }
+                            }
+                            buffer += 1;
+                            if (buffer < account.bufferId || account.bufferId == 0)
+                            {
+                                account.bufferId = buffer;
+                                dbh.Db.Updateable(account).ExecuteCommand();
+                                data2["buffer"][buffer.ToString()] = account.bufferData;   // "[1,3,292,2],[100,50,8,88888]"
+                            }
+                            data2.Remove("info");
+                        }
                     }
-                    data2.Remove("info");
                     Rep["data"] = EncodeResponseData(data2.ToString(Formatting.None), "OOHVcwo3Yb2Kob3YC38mVxwJ0aKIaWuBBLj7W8YiZRFLxBr3QuQFA1VghXV1MF", keyid);
                     Rep["ok"] = true;
                 }

@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace baofengCrack.Controllers
 {
-    [CustAuthorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public class SysController : Controller
     {
         [Route("/login")]
@@ -32,7 +32,7 @@ namespace baofengCrack.Controllers
                             new Claim(ClaimTypes.Name,"admin's name"),
                             new Claim(ClaimTypes.WindowsAccountName,"admin"),
                             new Claim(ClaimTypes.UserData,"user.UpLoginDate.ToString()")
-                    }, CustAuthorizeAttribute.MakAuthenticationScheme)
+                    }, CookieAuthenticationDefaults.AuthenticationScheme)
             );
             HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, identity, 
                 new AuthenticationProperties

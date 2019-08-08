@@ -148,6 +148,19 @@ namespace baofengCrack.Controllers
                 Rep["skip"] = "1";
                 return;
             }
+            if (repdata.IndexOf("in_ip_blacklist=1") > 0)
+            {
+                //ipBan.
+                StringBuilder localSaveData = new StringBuilder();
+                localSaveData.Append("server_time_stamp=");
+                localSaveData.Append(((DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000).ToString());
+                localSaveData.Append("&player_id=");
+                localSaveData.Append(user.player_id);
+                localSaveData.Append("&is_cheat=0&in_ip_blacklist=0&result=1&user_name=");
+                localSaveData.Append(user.userName);
+                repdata = localSaveData.ToString();
+            }
+       
             string player_id = repdata.GetQueryStringValue("player_id");
             int int_id;
             if (!int.TryParse(player_id, out int_id))
@@ -175,7 +188,7 @@ namespace baofengCrack.Controllers
             //被ban的账号，删除ban标志
             if (user.is_cheat)
             {                
-                repdata = repdata.Replace("is_cheat=1", "is_cheat=");
+                repdata = repdata.Replace("is_cheat=1", "is_cheat=0");
             }
             Rep["ok"] = true;
             Rep["data"] = repdata;
@@ -193,7 +206,7 @@ namespace baofengCrack.Controllers
             }
            
             StringBuilder localSaveData = new StringBuilder();
-            localSaveData.Append("is_cheat=&result=1&server_time_stamp=");
+            localSaveData.Append("is_cheat=0&result=1&server_time_stamp=");
             localSaveData.Append(((DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000).ToString());
             bool force_download = bodyData.GetQueryStringValue("force_download").Asbool();
             if (user.isHold || force_download)
